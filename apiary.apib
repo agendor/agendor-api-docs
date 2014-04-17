@@ -21,9 +21,25 @@ This API use JSON format to represent resources. When sending content on PUT/POS
 
     Content-Type: application/json
 
-## Error States
+## Response Codes
 The common [HTTP Response Status Codes](https://github.com/for-GET/know-your-http-well/blob/master/status-codes.md) are used.
 
+You will often see:
+
+* 200 (OK) - GET and PUT methods
+* 204 (Created) - POST methods
+* 201 (No content) - DELETE methods.
+
+## Error States
+
+When something goes wrong, the response status code can be `4xx` if the error is related to your request structure or `5xx` if it's our server's fault.
+
+Example:
+
+* 400 (Bad request) - GET /people?page=0, when page should start from 1
+* 401 (Unauthorized) - GET /people/123, when this resource belongs to your account but you don't have permission defined by the administrator for it
+* 404 (Not found) - GET /people/999, when the id 999 does not exist
+* 500 (Internal server error) - When a request throws an unexpected error. If you see this status code, please contact us: contato@agendor.com.br
 
 # Group People
 
