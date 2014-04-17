@@ -305,8 +305,14 @@ Collection of all `People`.
     + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
 
 + Response 200
+    
+    + Header
+    
+            Links: http
 
-    [People Collection][]
+    + Body
+            
+            [People Collection][]
 
 ### Add a new Person [POST]
 To create a new `Person`, send a JSON with at least the person's `name`. All the other `Person` resource attributes are optionals. See the **Schema** inside the **Request** section below for all allowed attributes.
