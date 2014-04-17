@@ -49,7 +49,6 @@ A single `Person` object.
 + Parameters
 
     + id (string) ... `personId` attribute of the `Person`.
-    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
 
 + Model (application/json)
 
@@ -116,7 +115,14 @@ A single `Person` object.
             }
 
 ### Retrieve a Person [GET]
+
++ Parameters
+    
+    + id (string) ... `personId` attribute of the `Person`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+        
 + Request
+            
     + Header
     
             Accept: application/json
@@ -150,8 +156,13 @@ A single `Person` object.
 
 
 ### Edit a Person [PUT]
-To update a `Person`, send a JSON with updated value for one or more of the `Person` attributes. All attributes values (states) from the previous version of this `Person` are carried over by default if not included in the hash. See the **Schema** inside the **Request** section below for all allowed attributes.
+To update a `Person`, send a JSON with updated value for one or more of the `Person` attributes. All attributes values (states) from the previous version of this `Person` are carried over by default if not included in the hash. See the **Schema** in the Example section for all allowed attributes.
 
++ Parameters
+    
+    + id (string) ... `personId` attribute of the `Person`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
 + Request (application/json)
 
     + Body
@@ -213,6 +224,10 @@ To update a `Person`, send a JSON with updated value for one or more of the `Per
 
 ### Delete a Person [DELETE]
 + Response 204
+
+    When succeed, return 204 and an empty payload.
+
+    + Body
 
 ## People Collection [/people]
 Collection of all `People`.
