@@ -1,0 +1,407 @@
+FORMAT: 1A
+HOST: http://api.agendor.com.br
+
+# Agendor API V1
+The Agendor API provides a representation of the data found in your account at [Agendor](http://agendor.com.br).
+We follow the **RESTful** principles, so the API is stateless and http methods and response codes are used whenever possible.
+
+Currently, the only available resource for the API is `/people`. More routes will be implemented for it and also for other resources.
+
+To keep update with our changes, subscribe your e-mail here:
+
+## Authentication
+Currently the only available is [HTTP Basic Authentication](https://tools.ietf.org/html/rfc2617#section-2). It's done by sending an `Authorization` header with a base64 encoded string of `email:password`.
+
+Example:
+
+    Authorization: Basic LkBmiuNvbToxMjM=
+
+## Media Types
+This API use JSON format to represent resources. We recommend to specify your request with the follow header:
+
+    Content-Type: application/json
+
+## Error States
+The common [HTTP Response Status Codes](https://github.com/for-GET/know-your-http-well/blob/master/status-codes.md) are used.
+
+---
+
+# Group People
+
+## People [/people/{id}]
+A single `Person` object.
+
++ Parameters
+
+    + id (string) ... `personId` attribute of the `Person`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "personId": 111,
+                "customer": {
+                    "customerId": 222,
+                    "name": "Customer name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "category": {
+                    "categoryId": 444,
+                    "name": "Category name"
+                },
+                "organization": {
+                    "organizationId": 555,
+                    "nickname": "Organization nickname"
+                },
+                "phones": [
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "fax"
+                    }
+                ],
+                "emails": ["email@email.com"],
+                "social": {
+                    "facebook": "fb.com/user",
+                    "twitter": "twitter.com/user",
+                    "skype": "user",
+                    "linkedIn": "linkedin.com/user"
+                },
+                "address": {
+                    "postalCode": "12345000",
+                    "country": "Country",
+                    "state": "State",
+                    "city": "City",
+                    "district": "District",
+                    "streetName": "Street",
+                    "streetNumber": 111,
+                    "additionalInfo": "Info"
+                },
+                "userOwner": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "name": "Abc",
+                "role": "Role",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "cpf": "11122233300"
+            }
+
+### Retrieve a Person [GET]
++ Request
+    + Header
+    
+            Accept: application/json
+
++ Response 200
+    [People][]
+
++ Response 400
+
+    + Description
+        When making a request with invalid options, status code 400 will be returned. For example, passing a invalid value for the `page` parameter.
+
+    + Body
+    
+            {
+                "statusCode": 400,
+                "error": "Bad Request",
+                "message": "the value of page must be larger than or equal to 1",
+                "validation": {
+                    "source": "query",
+                    "keys": [
+                        "page"
+                    ]
+                }
+            }
+
++ Response 404
+    
+    + Description
+        When the resource with the specified id does not exist.
+    
+    + Body
+
+
+### Edit a Person [PUT]
+To update a `Person`, send a JSON with updated value for one or more of the `Person` attributes. All attributes values (states) from the previous version of this `Person` are carried over by default if not included in the hash. See the **Schema** inside the **Request** section below for all allowed attributes.
+
++ Request (application/json)
+
+    + Body
+
+            {
+                "name": "New person name"
+            }
+
+    + Schema
+
+            {
+                "personId": integer,
+                "customer": integer,
+                "user": integer,
+                "category": integer,
+                "organization": integer,
+                "phones": [
+                    {
+                        "number": "(##) ####-####",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "fax"
+                    }
+                ],
+                "emails": [string],
+                "social": {
+                    "facebook": string,
+                    "twitter": string,
+                    "skype": string,
+                    "linkedIn": string
+                },
+                "address": {
+                    "postalCode": "########",
+                    "country": string,
+                    "state": string,
+                    "city": string,
+                    "district": string,
+                    "streetName": string,
+                    "streetNumber": integer,
+                    "additionalInfo": string
+                },
+                "userOwner": integer,
+                "name": string,
+                "role": string,
+                "createTime": "yyyy-MM-ddThh:mm:ss.SSSZ",
+                "ranking": integer (1-5),
+                "cpf": "###########"
+            }
+
++ Response 200
+    
+    [People][]
+
+### Delete a Person [DELETE]
++ Response 204
+
+## People Collection [/people]
+Collection of all `People`.
+
++ Model (application/json)
+
+    JSON representation of People Resource.
+
+    + Body
+
+            [{
+                "personId": 111,
+                "customer": {
+                    "customerId": 222,
+                    "name": "Customer name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "category": {
+                    "categoryId": 444,
+                    "name": "Category name"
+                },
+                "organization": {
+                    "organizationId": 555,
+                    "nickname": "Organization nickname"
+                },
+                "phones": [
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "fax"
+                    }
+                ],
+                "emails": ["email@email.com"],
+                "social": {
+                    "facebook": "fb.com/user",
+                    "twitter": "twitter.com/user",
+                    "skype": "user",
+                    "linkedIn": "linkedin.com/user"
+                },
+                "address": {
+                    "postalCode": "12345000",
+                    "country": "Country",
+                    "state": "State",
+                    "city": "City",
+                    "district": "District",
+                    "streetName": "Street",
+                    "streetNumber": 111,
+                    "additionalInfo": "Info"
+                },
+                "userOwner": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "name": "Abc",
+                "role": "Role",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "cpf": "11122233300"
+            }]
+
+### List All People [GET]
++ Parameters
+    + page = `1` (optional, number) ... Page for pagination. Starts from 1.
+    + per_page = `100` (optional, number) ... Quantity per page for pagination. Must be between 1 <= 100.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+
++ Response 200
+
+    [People Collection][]
+
+### Add a new Person [POST]
+To create a new `Person`, send a JSON with at least the person's `name`. All the other `Person` resource attributes are optionals. See the **Schema** inside the **Request** section below for all allowed attributes.
+
++ Request (application/json)
+
+    + Body 
+        
+            {
+                "name": "Name of the Gist",
+                "content": "String content"
+            }
+
+    + Schema
+    
+            {
+                "personId": integer,
+                "customer": integer,
+                "user": integer,
+                "category": integer,
+                "organization": integer,
+                "phones": [
+                    {
+                        "number": "(##) ####-####",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "fax"
+                    }
+                ],
+                "emails": [string],
+                "social": {
+                    "facebook": string,
+                    "twitter": string,
+                    "skype": string,
+                    "linkedIn": string
+                },
+                "address": {
+                    "postalCode": "########",
+                    "country": string,
+                    "state": string,
+                    "city": string,
+                    "district": string,
+                    "streetName": string,
+                    "streetNumber": integer,
+                    "additionalInfo": string
+                },
+                "userOwner": integer,
+                "name": string,
+                "role": string,
+                "ranking": integer (1-5),
+                "cpf": "###########"
+            }
+
++ Response 201
+
+    + Header
+    
+            Location: https://api.agendor.com.br/v1/people/111
+
+    + Body
+    
+            {
+                "personId": 111,
+                "customer": {
+                    "customerId": 222,
+                    "name": "Customer name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "category": {
+                    "categoryId": 444,
+                    "name": "Category name"
+                },
+                "organization": {
+                    "organizationId": 555,
+                    "nickname": "Organization nickname"
+                },
+                "phones": [
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "fax"
+                    }
+                ],
+                "emails": ["email@email.com"],
+                "social": {
+                    "facebook": "fb.com/user",
+                    "twitter": "twitter.com/user",
+                    "skype": "user",
+                    "linkedIn": "linkedin.com/user"
+                },
+                "address": {
+                    "postalCode": "12345000",
+                    "country": "Country",
+                    "state": "State",
+                    "city": "City",
+                    "district": "District",
+                    "streetName": "Street",
+                    "streetNumber": 111,
+                    "additionalInfo": "Info"
+                },
+                "userOwner": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "name": "Abc",
+                "role": "Role",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "cpf": "11122233300"
+            }
