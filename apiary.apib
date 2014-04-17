@@ -41,6 +41,34 @@ Example:
 * 404 (Not found) - GET /people/999, when the id 999 does not exist
 * 500 (Internal server error) - When a request throws an unexpected error. If you see this status code, please contact us: contato@agendor.com.br
 
+## Pagination
+
+When requesting a resource that returns a collection, a pagination process may be done with the follow steps:
+
+The query parameters `page` *(default = 1)* and `per_page` *(default = 100)* are always sent on the request.
+
+The response from the server will have the following headers:
+
+* Total-Count: `integer`
+
+    *Total number of objects found for the request done.*
+    
+* Link: `<uri for first page>; rel="first"`, `<uri for previous page>; rel="prev"`, `<uri for next page>; rel="next"`, `<uri for last page >; rel="last"`
+
+    *Links for each page available based on the page requested.*
+    
+````
+// Example
+
+>> Request
+https://api.agendor.com.br/v1/people?page=1&per_page=10
+
+<< Response headers
+Total-Count: 35
+Link: <https://api.agendor.com.br/v1/people?page=2&per_page=10>; rel="next", 
+    <https://api.agendor.com.br/v1/people?page=4&per_page=10>; rel="last"
+````
+
 # Group People
 
 ## People [/people/{id}]
@@ -308,11 +336,70 @@ Collection of all `People`.
     
     + Header
     
-            Links: http
+            Total-count: 120 (total number of resources found by the request)
+            Links: <https://api.agendor.com.br/people?page=2&per_page=10>; rel="next", <https://api.agendor.com.br/people?page=68&per_page=10>; rel="last"
 
     + Body
             
-            [People Collection][]
+            [{
+                "personId": 111,
+                "customer": {
+                    "customerId": 222,
+                    "name": "Customer name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "category": {
+                    "categoryId": 444,
+                    "name": "Category name"
+                },
+                "organization": {
+                    "organizationId": 555,
+                    "nickname": "Organization nickname"
+                },
+                "phones": [
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "fax"
+                    }
+                ],
+                "emails": ["email@email.com"],
+                "social": {
+                    "facebook": "fb.com/user",
+                    "twitter": "twitter.com/user",
+                    "skype": "user",
+                    "linkedIn": "linkedin.com/user"
+                },
+                "address": {
+                    "postalCode": "12345000",
+                    "country": "Country",
+                    "state": "State",
+                    "city": "City",
+                    "district": "District",
+                    "streetName": "Street",
+                    "streetNumber": 111,
+                    "additionalInfo": "Info"
+                },
+                "userOwner": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "name": "Abc",
+                "role": "Role",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "cpf": "11122233300"
+            }]
 
 ### Add a new Person [POST]
 To create a new `Person`, send a JSON with at least the person's `name`. All the other `Person` resource attributes are optionals. See the **Schema** inside the **Request** section below for all allowed attributes.
@@ -322,8 +409,14 @@ To create a new `Person`, send a JSON with at least the person's `name`. All the
     + Body 
         
             {
-                "name": "Name of the Gist",
-                "content": "String content"
+                "name": "Name of the Person",
+                "category": 123
+                "phones": [
+                    {
+                        "number": "(11) 99999-5555",
+                        "type": "mobile"
+                    }
+                ]
             }
 
     + Schema
