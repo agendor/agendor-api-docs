@@ -5,11 +5,9 @@ HOST: https://api.agendor.com.br/v1
 The Agendor API provides a representation of the data found in your account at [Agendor](http://agendor.com.br).
 We follow the **RESTful** principles, so the API is stateless and http methods and response codes are used whenever possible.
 
-Currently, the only available resource for the API is `/people`. More routes will be implemented for it and also for other resources.
-
 The url for the requests is: `https://api.agendor.com.br/v1`
 
-# Versioning
+## Versioning
 
 **To keep updated with any changes in this API and new versions release, subscribe to our list.**
 <div>
@@ -27,14 +25,48 @@ The url for the requests is: `https://api.agendor.com.br/v1`
 </div>
 
 ## Authentication
-Currently the only available is [HTTP Basic Authentication](https://tools.ietf.org/html/rfc2617#section-2). It's done by sending an `Authorization` header with a base64 encoded string of `email:password`.
+
+You can choose one of the following ways to authenticate and have access to the API resources. We recommend using the Token method.
+
+### Username and password
+
+[HTTP Basic Authentication](https://tools.ietf.org/html/rfc2617#section-2). It's done by sending an `Authorization` header with the text `Basic` followed by a base64 encoded string of `email:password`.
 
 Example:
 
-    Authorization: Basic LkBmiuNvbToxMjM=
+    curl "https://api.agendor.com.br/v1/organizations?page=1&pretty=true" \
+        -H "Authorization: Basic ZW1haWxAZW1haWwuY29tOjEyMw=="
+    
+which, using `curl`, is equivalent to:
+
+    curl "https://api.agendor.com.br/v1/organizations?page=1&pretty=true" \
+        -u "email@email.com:password"
+    
+### Token
+ 
+It's done by sending an `Authorization` header with the text `Token` followed by the use token.
+
+Example:
+
+    curl "https://api.agendor.com.br/v1/organizations?page=1&pretty=true" \
+        -H "Authorization: Token dGVzdGVAYWdlbmRvci5jb20uYnI6YWdlbmRvcg"
+    
+**Getting the Token**
+
+You can find your token making a GET request to `/auth/token` or by accesing [Menu > Integrações](https://www.agendor.com.br/sistema/integracoes/) in your Agendor account.
+
+Example:
+
+````
+>> Request
+curl https://api.agendor.com.br/v1/auth/token -u "email@email.com:password" -X GET
+
+<< Response body
+{"token":"b02719529-a249-m4e3-9111-0ss5q7i72153a"}
+````
 
 ## Media Types
-This API use JSON format to represent resources. When sending content on PUT/POST requests, we recommend to specify the follow header:
+This API use JSON format to represent resources. When sending content on PUT/POST requests, you **must** specify the follow header:
 
     Content-Type: application/json
 
@@ -44,8 +76,8 @@ The common [HTTP Response Status Codes](https://github.com/for-GET/know-your-htt
 You will often see:
 
 * 200 (OK) - GET and PUT methods
-* 204 (Created) - POST methods
-* 201 (No content) - DELETE methods.
+* 201 (Created) - POST methods
+* 204 (No content) - DELETE methods.
 
 ## Error States
 
@@ -54,8 +86,9 @@ When something goes wrong, the response status code can be `4xx` if the error is
 Example:
 
 * 400 (Bad request) - GET /people?page=0, when page should start from 1
-* 401 (Unauthorized) - GET /people/123, when this resource belongs to your account but you don't have permission defined by the administrator for it
+* 401 (Unauthorized) - GET /people/123, when you did not specify a valid authorization method or this resource belongs to your account but you don't have permission granted by the administrator for it
 * 404 (Not found) - GET /people/999, when the id 999 does not exist
+* 415 (Unsupported media type) - POST /people, when the Content-Type header is not defined
 * 500 (Internal server error) - When a request throws an unexpected error. If you see this status code, please contact us: contato@agendor.com.br
 
 ## Pagination
@@ -73,12 +106,12 @@ The response from the server will have the following headers:
 * Link: `<uri for first page>; rel="first"`, `<uri for previous page>; rel="prev"`, `<uri for next page>; rel="next"`, `<uri for last page >; rel="last"`
 
     *Links for each page available based on the page requested.*
+
+Example:
     
 ````
-// Example
-
 >> Request
-https://api.agendor.com.br/v1/people?page=1&per_page=10
+curl https://api.agendor.com.br/v1/people?page=1&per_page=10
 
 << Response headers
 Total-Count: 35
@@ -101,10 +134,6 @@ A single `Person` object.
     
             {
                 "personId": 111,
-                "customer": {
-                    "customerId": 222,
-                    "name": "Customer name"
-                },
                 "user": {
                     "userId": 333,
                     "name": "User name"
@@ -220,8 +249,6 @@ To update a `Person`, send a JSON with updated value for one or more of the `Per
 
             {
                 "personId": integer,
-                "customer": integer,
-                "user": integer,
                 "category": integer,
                 "organization": integer,
                 "phones": [
@@ -285,10 +312,6 @@ Collection of all `People`.
 
             [{
                 "personId": 111,
-                "customer": {
-                    "customerId": 222,
-                    "name": "Customer name"
-                },
                 "user": {
                     "userId": 333,
                     "name": "User name"
@@ -360,10 +383,6 @@ Collection of all `People`.
             
             [{
                 "personId": 111,
-                "customer": {
-                    "customerId": 222,
-                    "name": "Customer name"
-                },
                 "user": {
                     "userId": 333,
                     "name": "User name"
@@ -430,7 +449,7 @@ To create a new `Person`, send a JSON with at least the person's `name`. All the
         
             {
                 "name": "Name of the Person",
-                "category": 123
+                "category": 123,
                 "phones": [
                     {
                         "number": "(11) 99999-5555",
@@ -443,8 +462,6 @@ To create a new `Person`, send a JSON with at least the person's `name`. All the
     
             {
                 "personId": integer,
-                "customer": integer,
-                "user": integer,
                 "category": integer,
                 "organization": integer,
                 "phones": [
@@ -495,10 +512,6 @@ To create a new `Person`, send a JSON with at least the person's `name`. All the
     
             {
                 "personId": 111,
-                "customer": {
-                    "customerId": 222,
-                    "name": "Customer name"
-                },
                 "user": {
                     "userId": 333,
                     "name": "User name"
@@ -510,6 +523,452 @@ To create a new `Person`, send a JSON with at least the person's `name`. All the
                 "organization": {
                     "organizationId": 555,
                     "nickname": "Organization nickname"
+                },
+                "phones": [
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "work"
+                    },
+                    {   
+                        "number": "(00) 0000-0000",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "fax"
+                    }
+                ],
+                "emails": ["email@email.com"],
+                "social": {
+                    "facebook": "fb.com/user",
+                    "twitter": "twitter.com/user",
+                    "skype": "user",
+                    "linkedIn": "linkedin.com/user"
+                },
+                "address": {
+                    "postalCode": "12345000",
+                    "country": "Country",
+                    "state": "State",
+                    "city": "City",
+                    "district": "District",
+                    "streetName": "Street",
+                    "streetNumber": 111,
+                    "additionalInfo": "Info"
+                },
+                "userOwner": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "name": "Abc",
+                "role": "Role",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "cpf": "11122233300"
+            }
+            
+# Group Organizations
+
+## Organizations [/organizations/{id}]
+A single `Organization` object.
+
++ Parameters
+
+    + id (string) ... `organizationId` attribute of the `Organization`.
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "organizationId": 111,
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "category": {
+                    "categoryId": 444,
+                    "name": "Category name"
+                }
+                "phones": [
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(00) 0000-0000",
+                        "type": "fax"
+                    }
+                ],
+                "emails": ["email@email.com"],
+                "social": {
+                    "facebook": "fb.com/user",
+                    "twitter": "twitter.com/user",
+                    "skype": "user",
+                    "linkedIn": "linkedin.com/user"
+                },
+                "address": {
+                    "postalCode": "12345000",
+                    "country": "Country",
+                    "state": "State",
+                    "city": "City",
+                    "district": "District",
+                    "streetName": "Street",
+                    "streetNumber": 111,
+                    "additionalInfo": "Info"
+                },
+                "userOwner": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "nickname": "Abc",
+                "legalName": "Abc Inc",
+                "cnpj": "1112225555000",
+                "description": "Description",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "website": "www.website.com.br"
+            }
+
+### Retrieve an Organization [GET]
+
++ Parameters
+    
+    + id (string) ... `organizationId` attribute of the `Organization`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+        
++ Request
+            
+    + Header
+    
+            Accept: application/json
+
++ Response 200
+    [Organizations][]
+
++ Response 400
+
+    When making a request with invalid options, status code 400 will be returned. For example, passing a invalid value for the `page` parameter.
+
+    + Body
+    
+            {
+                "statusCode": 400,
+                "error": "Bad Request",
+                "message": "the value of page must be larger than or equal to 1",
+                "validation": {
+                    "source": "query",
+                    "keys": [
+                        "page"
+                    ]
+                }
+            }
+
++ Response 404
+    
+    When the resource with the specified id does not exist.
+    
+    + Body
+
+
+### Edit an Organization [PUT]
+To update an `Organization`, send a JSON with updated value for one or more of the `Organization` attributes. All attributes values (states) from the previous version of this `Organization` are carried over by default if not included in the hash. See the **Schema** in the Example section for all allowed attributes.
+
++ Parameters
+    
+    + id (string) ... `organizationId` attribute of the `Organization`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
++ Request (application/json)
+
+    + Body
+
+            {
+                "name": "New organization name"
+            }
+
+    + Schema
+
+            {
+                "organizationId": integer,
+                "category": integer,
+                "sector": integer,
+                "phones": [
+                    {
+                        "number": "(##) ####-####",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "fax"
+                    }
+                ],
+                "emails": [string],
+                "social": {
+                    "facebook": string,
+                    "twitter": string,
+                    "skype": string,
+                    "linkedIn": string
+                },
+                "address": {
+                    "postalCode": "########",
+                    "country": string,
+                    "state": string,
+                    "city": string,
+                    "district": string,
+                    "streetName": string,
+                    "streetNumber": integer,
+                    "additionalInfo": string
+                },
+                "userOwner": integer,
+                "nickname": string,
+                "legalName": "Abc Inc",
+                "cnpj": "##############",
+                "description": string,
+                "website": string,
+                "createTime": "yyyy-MM-ddThh:mm:ss.SSSZ",
+                "ranking": integer (1-5)
+            }
+
++ Response 200
+    
+    [Organizations][]
+
+### Delete an Organization [DELETE]
++ Response 204
+
+    When succeed, return 204 and an empty payload.
+
+    + Body
+
+## Organizations Collection [/organizations]
+Collection of all `Organizations`.
+
++ Model (application/json)
+
+    JSON representation of Organizations Resource.
+
+    + Body
+
+            [{
+                 "organizationId": 111,
+                 "user": {
+                     "userId": 333,
+                     "name": "User name"
+                 },
+                 "category": {
+                     "categoryId": 444,
+                     "name": "Category name"
+                 },
+                 "phones": [
+                     {
+                         "number": "(00) 0000-0000",
+                         "type": "work"
+                     },
+                     {
+                         "number": "(00) 0000-0000",
+                         "type": "mobile"
+                     },
+                     {
+                         "number": "(00) 0000-0000",
+                         "type": "fax"
+                     }
+                 ],
+                 "emails": ["email@email.com"],
+                 "social": {
+                     "facebook": "fb.com/user",
+                     "twitter": "twitter.com/user",
+                     "skype": "user",
+                     "linkedIn": "linkedin.com/user"
+                 },
+                 "address": {
+                     "postalCode": "12345000",
+                     "country": "Country",
+                     "state": "State",
+                     "city": "City",
+                     "district": "District",
+                     "streetName": "Street",
+                     "streetNumber": 111,
+                     "additionalInfo": "Info"
+                 },
+                 "userOwner": {
+                     "userId": 333,
+                     "name": "User name"
+                 },
+                 "nickname": "Abc",
+                 "legalName": "Abc Inc",
+                 "cnpj": "1112225555000",
+                 "description": "Description",
+                 "createTime": "2014-03-27T14:59:39.000Z",
+                 "ranking": 5,
+                 "website": "www.website.com.br"
+             }]
+
+### List all Organizations [GET]
++ Parameters
+    + page = `1` (optional, number) ... Page for pagination. Starts from 1.
+    + per_page = `100` (optional, number) ... Quantity per page for pagination. Must be between 1 <= 100.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+
++ Response 200
+    
+    + Header
+    
+            Total-Count: 479 (total number of resources found by the request)
+            Link: <https://api.agendor.com.br/v1/organizations?page=2&per_page=100>; rel="next", <https://api.agendor.com.br/v1/organizations?page=5&per_page=100>; rel="last"
+
+    + Body
+            
+            [{
+                  "organizationId": 111,
+                  "user": {
+                      "userId": 333,
+                      "name": "User name"
+                  },
+                  "category": {
+                      "categoryId": 444,
+                      "name": "Category name"
+                  },
+                  "phones": [
+                      {
+                          "number": "(00) 0000-0000",
+                          "type": "work"
+                      },
+                      {
+                          "number": "(00) 0000-0000",
+                          "type": "mobile"
+                      },
+                      {
+                          "number": "(00) 0000-0000",
+                          "type": "fax"
+                      }
+                  ],
+                  "emails": ["email@email.com"],
+                  "social": {
+                      "facebook": "fb.com/user",
+                      "twitter": "twitter.com/user",
+                      "skype": "user",
+                      "linkedIn": "linkedin.com/user"
+                  },
+                  "address": {
+                      "postalCode": "12345000",
+                      "country": "Country",
+                      "state": "State",
+                      "city": "City",
+                      "district": "District",
+                      "streetName": "Street",
+                      "streetNumber": 111,
+                      "additionalInfo": "Info"
+                  },
+                  "userOwner": {
+                      "userId": 333,
+                      "name": "User name"
+                  },
+                  "nickname": "Abc",
+                  "legalName": "Abc Inc",
+                  "cnpj": "1112225555000",
+                  "description": "Description",
+                  "createTime": "2014-03-27T14:59:39.000Z",
+                  "ranking": 5,
+                  "website": "www.website.com.br"
+              }]
+
+### Add a new Organization [POST]
+To create a new `Organization`, send a JSON with at least the organization's `nickname`. All the other `Organization` resource attributes are optionals. See the **Schema** in the Example section for all allowed attributes.
+
++ Parameters
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
++ Request (application/json)
+
+    + Body 
+        
+            {
+                "nickname": "Name of the Organization",
+                "category": 123,
+                "phones": [
+                    {
+                        "number": "(11) 99999-5555",
+                        "type": "mobile"
+                    }
+                ]
+            }
+
+    + Schema
+    
+            {
+                "organizationId": integer,
+                "category": integer,
+                "sector": integer,
+                "phones": [
+                    {
+                        "number": "(##) ####-####",
+                        "type": "work"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "mobile"
+                    },
+                    {
+                        "number": "(##) ####-####",
+                        "type": "fax"
+                    }
+                ],
+                "emails": [string],
+                "social": {
+                    "facebook": string,
+                    "twitter": string,
+                    "skype": string,
+                    "linkedIn": string
+                },
+                "address": {
+                    "postalCode": "########",
+                    "country": string,
+                    "state": string,
+                    "city": string,
+                    "district": string,
+                    "streetName": string,
+                    "streetNumber": integer,
+                    "additionalInfo": string
+                },
+                "userOwner": integer,
+                "nickname": string,
+                "legalName": "Abc Inc",
+                "cnpj": "##############",
+                "description": string,
+                "website": string,
+                "createTime": "yyyy-MM-ddThh:mm:ss.SSSZ",
+                "ranking": integer (1-5)
+            }
+
++ Response 201
+
+    + Header
+    
+            Location: https://api.agendor.com.br/v1/organizations/111
+
+    + Body
+    
+            {
+                "organizationId": 111,
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "category": {
+                    "categoryId": 444,
+                    "name": "Category name"
+                },
+                "sector": {
+                    "sectorId": 555,
+                    "name": "Sector name"
                 },
                 "phones": [
                     {
@@ -546,9 +1005,516 @@ To create a new `Person`, send a JSON with at least the person's `name`. All the
                     "userId": 333,
                     "name": "User name"
                 },
-                "name": "Abc",
-                "role": "Role",
+                "nickname": "Abc",
+                "legalName": "Abc Inc",
+                "cnpj": "1112225555000",
+                "description": "Description",
                 "createTime": "2014-03-27T14:59:39.000Z",
                 "ranking": 5,
-                "cpf": "11122233300"
+                "website": "www.website.com.br"
+            }
+
+# Group Deals
+
+## Deals [/deals/{id}]
+A single `Deal` object.
+
++ Parameters
+
+    + id (string) ... `dealId` attribute of the `Deal`.
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "dealId": 111,
+                "organization": {
+                    "organizationId": 333,
+                    "name": "Organization name"
+                },
+                "person": {
+                    "personId": 333,
+                    "name": "Person name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "dealStage": {
+                    "dealStageId": 444,
+                    "name": "Deal Stage name"
+                },
+                "dealStatus": {
+                    "dealStatusId": 1, (1-3)
+                    "name": "In process" (In process, Won, Lost)
+                },
+                "userOwner": {
+                    "userId": 555,
+                    "name": "User Owner name"
+                },
+                "title": "Abc",
+                "description": "Description",
+                "startTime": "2014-03-27T14:59:39.000Z",
+                "endTime": "2014-03-27T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "value": 123999.00,
+                "products": [
+                    {
+                        "productId": 77,
+                        "name": "Product X"
+                    },
+                    {
+                        "productId": 99,
+                        "name": "Product Y"
+                    }
+                ],
+                "allowedUsers": [
+                    {
+                        "userId": 333,
+                        "name": "User name 1"
+                    },
+                    {
+                        "userId": 555,
+                        "name": "User name 2"
+                    }
+                ]
+            }
+
+
+### Edit a Deal [PUT]
+To update an `Deal`, send a JSON with updated value for one or more of the `Deal` attributes. All attributes values (states) from the previous version of this `Deal` are carried over by default if not included in the hash. See the **Schema** in the Example section for all allowed attributes.
+
++ Parameters
+    
+    + id (string) ... `dealId` attribute of the `Deal`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
++ Request (application/json)
+
+    + Body
+
+            {
+                "value": 10000
+            }
+
+    + Schema
+
+            {
+                "organization": 111, // can not be set together with person
+                "person": 222, // can not be set together with organization
+                "user": 333,
+                "dealStage": 1, // deal stage order (1-10)
+                "dealStatus": 1, // deal status id (1-3)
+                "userOwner": 444,
+                "title": "Abc",
+                "description": "Description",
+                "startTime": "2014-03-28T14:59:39.000Z",
+                "endTime": "2014-04-10T00:00:00.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "value": 123999.00,
+                "products": [77, 99],
+                "allowedUsers": [333, 555]
+            }
+
++ Response 200
+    
+    [Deals][]
+
+
+## Deals Collection [/deals]
+Collection of all `Deals`.
+
++ Model (application/json)
+
+    JSON representation of Deal Resource.
+
+    + Body
+
+            [{
+                "dealId": 111,
+                "organization": {
+                    "organizationId": 333,
+                    "name": "Organization name"
+                },
+                "person": {
+                    "personId": 333,
+                    "name": "Person name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "dealStage": {
+                    "dealStageId": 444,
+                    "name": "Deal Stage name"
+                },
+                "dealStatus": {
+                    "dealStatusId": 1, (1-3)
+                    "name": "In process" (In process, Won, Lost)
+                },
+                "userOwner": {
+                    "userId": 555,
+                    "name": "User Owner name"
+                },
+                "title": "Abc",
+                "description": "Description",
+                "startTime": "2014-03-27T14:59:39.000Z",
+                "endTime": "2014-03-27T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "value": 123999.00,
+                "products": [
+                    {
+                        "productId": 77,
+                        "name": "Product X"
+                    },
+                    {
+                        "productId": 99,
+                        "name": "Product Y"
+                    }
+                ],
+                "allowedUsers": [
+                    {
+                        "userId": 333,
+                        "name": "User name 1"
+                    },
+                    {
+                        "userId": 555,
+                        "name": "User name 2"
+                    }
+                ]
+            }]
+
+### Add a new Deal [POST]
+To create a new `Deal`, send a JSON with at least the deal's `title`. All the other `Deal` resource attributes are optionals. See the **Schema** in the Example section for all allowed attributes.
+
++ Parameters
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
++ Request (application/json)
+
+    + Body 
+        
+            {
+                "title": "Deal Title",
+                "organization": 111,
+                "value": 20000,
+                "dealStage": 1
+            }
+
+    + Schema
+    
+            {
+                "organization": 111, // can not be set together with person
+                "person": 222, // can not be set together with organization
+                "user": 333,
+                "dealStage": 1, // deal stage order (1-10)
+                "dealStatus": 1, // deal status id (1-3)
+                "userOwner": 444,
+                "title": "Abc",
+                "description": "Description",
+                "startTime": "2014-03-28T14:59:39.000Z",
+                "endTime": "2014-04-10T00:00:00.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "value": 123999.00,
+                "products": [77, 99],
+                "allowedUsers": [333, 555]
+            }
+
++ Response 201
+
+    + Header
+    
+            Location: https://api.agendor.com.br/v1/deals/111
+
+    + Body
+    
+            {
+                "dealId": 111,
+                "organization": {
+                    "organizationId": 333,
+                    "name": "Organization name"
+                },
+                "person": {
+                    "personId": 333,
+                    "name": "Person name"
+                },
+                "user": {
+                    "userId": 333,
+                    "name": "User name"
+                },
+                "dealStage": {
+                    "dealStageId": 444,
+                    "name": "Deal Stage name"
+                },
+                "dealStatus": {
+                    "dealStatusId": 1, (1-3)
+                    "name": "In process" (In process, Won, Lost)
+                },
+                "userOwner": {
+                    "userId": 555,
+                    "name": "User Owner name"
+                },
+                "title": "Abc",
+                "description": "Description",
+                "startTime": "2014-03-27T14:59:39.000Z",
+                "endTime": "2014-03-27T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "ranking": 5,
+                "value": 123999.00,
+                "products": [
+                    {
+                        "productId": 77,
+                        "name": "Product X"
+                    },
+                    {
+                        "productId": 99,
+                        "name": "Product Y"
+                    }
+                ],
+                "allowedUsers": [
+                    {
+                        "userId": 333,
+                        "name": "User name 1"
+                    },
+                    {
+                        "userId": 555,
+                        "name": "User name 2"
+                    }
+                ]
+            }
+
+# Group Tasks
+
+## Tasks [/tasks/{id}]
+A single `Task` object.
+
++ Parameters
+
+    + id (string) ... `taskId` attribute of the `Task`.
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "taskId": 999,
+                "deal": {
+                    "dealId": 111,
+                    "name": "Deal title"
+                },
+                "user": {
+                    "userId": 222,
+                    "name": "User name"
+                },
+                "text": "Text",
+                "dueDate": "2014-03-28T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "done": false
+                "doneTime": null,
+                "doneUser": null,
+                "assignedUsers": [
+                    {
+                        "userId": 55,
+                        "name": "User name"
+                    },
+                    {
+                        "userId": 66,
+                        "name": "User name"
+                    }
+                ]
+                "metrics": null
+            }
+
+
+### Edit a Task [PUT]
+To update an `Task`, send a JSON with updated value for one or more of the `Task` attributes. All attributes values (states) from the previous version of this `Task` are carried over by default if not included in the hash. See the **Schema** in the Example section for all allowed attributes.
+
++ Parameters
+    
+    + id (string) ... `taskId` attribute of the `Task`.
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
++ Request (application/json)
+
+    + Body
+
+            {
+                "deal": 111,
+                "text": "Text",
+                "dueDate": "2014-03-28T14:59:39.000Z",
+                "assignedUsers": [55, 66]
+            }
+
+    + Schema
+
+            {
+                "deal": 111, // can not be set together with person or organization
+                "person": 222, // can not be set together with deal or organization
+                "organization": 333, // can not be set together with deal or person
+                "user": 333, // if not set will be the request user
+                "text": "Text",
+                "dueDate": "2014-03-28T14:59:39.000Z", // can not be in the past
+                "createTime": "2014-03-27T14:59:39.000Z", // if not set will be current time in server
+                "done": false,
+                "doneTime": "2014-03-28T14:59:39.000Z",
+                "doneUser": 333,
+                "assignedUsers": [55, 66],
+                "metrics": [
+                    {
+                        "metricId": 55
+                        "value": 1
+                    },
+                    {
+                        "metricId": 77
+                        "value": 20.10
+                    },
+                ]
+            }
+
++ Response 200
+    
+    [Tasks][]
+
+
+## Tasks Collection [/tasks]
+Collection of all `Tasks`.
+
++ Model (application/json)
+
+    JSON representation of Task Resource.
+
+    + Body
+
+            [{
+                "taskId": 999,
+                "deal": {
+                    "dealId": 333,
+                    "name": "Deal title"
+                },
+                "organization": {
+                    "organizationId": 444,
+                    "name": "Organization name"
+                },
+                "person": {
+                    "personId": 555,
+                    "name": "Person name"
+                },
+                "user": {
+                    "userId": 666,
+                    "name": "User name"
+                },
+                "text": "text",
+                "dueDate": "2014-03-28T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "done": false
+                "doneTime": "2014-03-27T14:59:39.000Z",
+                "doneUser": {
+                    "userId": 666,
+                    "name": "User name"
+                },
+                "assignedUsers": [
+                    {
+                        "userId": 666,
+                        "name": "User name"
+                    },
+                    {
+                        "userId": 666,
+                        "name": "User name"
+                    }
+                ]
+                "metrics": [
+                    {
+                        "metricId": 55
+                        "value": 1
+                    },
+                    {
+                        "metricId": 77
+                        "value": 20.10
+                    }
+                ]
+            }]
+
+### Add a new Task [POST]
+To create a new `Task`, send a JSON with at least the task's `text`, `dueDate`, `assignedUsers` and one of `deal`, `person` or `organization`. All the other `Task` resource attributes are optionals. See the **Schema** in the Example section for all allowed attributes.
+
++ Parameters
+    + pretty = `false` (optional, boolean) ... Format JSON response to a friendly readable format.
+    
++ Request (application/json)
+
+    + Body 
+        
+            {
+                "deal": 111,
+                "text": "Text",
+                "dueDate": "2014-03-28T14:59:39.000Z",
+                "assignedUsers": [55, 66]
+            }
+
+    + Schema
+    
+            {
+                "deal": 111,
+                "person": 222,
+                "organization": 333,
+                "user": 333,
+                "text": "Text",
+                "dueDate": "2014-03-28T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "done": false,
+                "doneTime": "2014-03-28T14:59:39.000Z",
+                "doneUser": 333,
+                "assignedUsers": [55, 66],
+                "metrics": [
+                    {
+                        "metricId": 55
+                        "value": 1
+                    },
+                    {
+                        "metricId": 77
+                        "value": 20.10
+                    },
+                ]
+            }
+
++ Response 201
+
+    + Header
+    
+            Location: https://api.agendor.com.br/v1/deals/111
+
+    + Body
+    
+            {
+                "taskId": 999,
+                "deal": {
+                    "dealId": 111,
+                    "name": "Deal title"
+                },
+                "user": {
+                    "userId": 222,
+                    "name": "User name"
+                },
+                "text": "text",
+                "dueDate": "2014-03-28T14:59:39.000Z",
+                "createTime": "2014-03-27T14:59:39.000Z",
+                "done": false
+                "doneTime": null,
+                "doneUser": null,
+                "assignedUsers": [
+                    {
+                        "userId": 55,
+                        "name": "User name"
+                    },
+                    {
+                        "userId": 66,
+                        "name": "User name"
+                    }
+                ]
+                "metrics": null
             }
